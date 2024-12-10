@@ -17,8 +17,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "js-crypto-random": "^1.0.5",
     "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.7",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.1"
   }
 }

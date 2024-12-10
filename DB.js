@@ -23,10 +23,12 @@ const schema=new Schema({
     Username:String,
     Password:String,
     totalTables:String,
-    typeOfUser:{
+    type:{
         enum:["User","ResAdmin","Admin"],
         type:String,
-    }
+    },
+    resturantName:String,
+    orderList: []
 })
 const Usermodel=model("resusers",schema);
 export  {ConnectDB,Usermodel};
