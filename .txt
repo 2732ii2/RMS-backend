@@ -1,0 +1,9 @@
+: Learning Points into this
+- As such i was stuck with integrating s3 bucket into backend
+- and we are just good with the function 
+- but the things were automatically gone into a pending state
+- cause we have maded a async PutObjFunc
+- and try to use that in req controller of api 
+- with :  await PutObjFunc
+- which actually taking that into a pending state
+-  

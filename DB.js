@@ -29,6 +29,6 @@ const schema=new Schema({
     },
     resturantName:String,
     orderList: []
-})
+},{strict:false})
 const Usermodel=model("resusers",schema);
 export  {ConnectDB,Usermodel};

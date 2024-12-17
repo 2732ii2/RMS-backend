@@ -7,6 +7,15 @@ import dotenv from "dotenv";
 import {ConnectDB,Usermodel} from "./DB.js";
 import random from 'js-crypto-random';
 import {QRPDFGen} from "./QRPDFGenerator.js";
+import multer from "multer";
+import { PutObjectFunc, testS3Connection } from "./S3controller.js";
+
+import events from "events";
+events.EventEmitter.defaultMaxListeners = 20; 
+
+const upload = multer(); 
+
+
 const app=express();
 app.use(cors());
 app.use(bodyParser.json({extented:true}));
@@ -14,10 +23,11 @@ app.use(bodyParser.urlencoded({extented:true}));
 dotenv.config();
 const port=4100;
 
-
+testS3Connection();
 ConnectDB();
 app.get("/",(req,res)=>{
     res.json("hello world ");
+    // testS3Connection();
 })
 app.post("/userUpdation",async (req,res)=>{
     console.log("User updation")
@@ -47,6 +57,55 @@ app.post("/userUpdation",async (req,res)=>{
     }
 })
 
+
+app.post("/add_recipe",upload.any(),async (req,res)=>{
+    console.log("adding recipe",req.files[0]);
+    var {usersess,type,Prices,Sizes,name,des}=req.body;
+    console.log(JSON.parse(usersess),type,Prices,Sizes,name,des);
+    try{
+    const {token}=JSON.parse(usersess);
+    if(jwt.verify(token,"secret")){
+        PutObjectFunc(req.files[0]);
+        const obj_={
+            type,
+            Prices,
+            Sizes,
+            "name":req.files[0]?.originalname,
+            des
+        };
+       const dish= await Usermodel.findOne({_id:JSON.parse(usersess)?._id});
+       console.log("dish =>",dish?.Available_Dishes);
+       var query={};
+       if(!dish?.Available_Dishes?.length)
+        {
+            console.log("1");
+            query={$set:
+                {
+                    "Available_Dishes":[obj_]
+                }
+                };
+        }
+        else{
+            console.log("2");
+            query={$set:
+                {
+                    "Available_Dishes":[...(dish?.Available_Dishes),obj_]
+                }
+                };
+        }
+        const resp= await Usermodel.updateOne({_id:JSON.parse(usersess)?._id},query);
+       console.log( "=>" ,resp);
+        res.json({
+           msg:"some udpation is done it",
+        })
+    }
+    }
+    catch(e){
+        res.json({
+            err:e?.message
+        })
+    }
+})
 
 app.get("/deleteResAdmin",async(req,res)=>{
     try{
