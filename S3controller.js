@@ -1,6 +1,9 @@
-import { S3Client, ListBucketsCommand ,PutObjectCommand} from "@aws-sdk/client-s3";
-const client = new S3Client({ region: "REGION" });
+import { S3Client, ListBucketsCommand ,PutObjectCommand,GetObjectCommand} from "@aws-sdk/client-s3";
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
+import sharp from "sharp";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+
 const BucketName=`${process.env.Bucketname}`;
 const Reg=`${process.env.Region}`;
 const SecretKey=`${process.env.SecretKey}`;
@@ -28,7 +31,28 @@ const s3 = new S3Client({
       console.error("S3 connection failed:", error.message);
     }
   };
-  
+const GetObjs=async (lists)=>{
+  console.log("=>",lists);
+  try{
+    for( const ele of lists){
+      console.log("ele",ele);
+      const getObjectParams={
+        Bucket:BucketName,
+        Key:ele.key
+      }
+      const commandGetObj = new GetObjectCommand(getObjectParams);
+      // const url = await getSignedUrl(client, commandGetObj, { expiresIn: 3600 });
+      const url = await getSignedUrl(s3, commandGetObj, { expiresIn: 86400 }); 
+      console.log(url);
+      ele.imgurl=`${url}`;
+    }
+    // console.log( "lists",lists);
+    return lists;
+  }
+  catch(e){
+    console.log(e?.message);
+  }
+}
 const PutObjectFunc=async(file)=>{
     try{
         console.log("thing are begins");
@@ -36,7 +60,7 @@ const PutObjectFunc=async(file)=>{
             Bucket:BucketName,
             Key:file.originalname,
             Body:file.buffer,
-            // ContentType:file.mimetype,
+            ContentType: "image/jpeg",
         };
         console.log(params);
         const command =new PutObjectCommand(params);
@@ -48,34 +72,5 @@ const PutObjectFunc=async(file)=>{
     }
 }
 
-// import AWS from "aws-sdk";
 
-// const s31 = new AWS.S3({
-//  credentials: {
-//     accessKeyId: AccessKey,
-//     secretAccessKey:SecretKey,
-//   },
-//   region: Reg, // Ensure this matches your bucket's region
-//   requestHandler: new NodeHttpHandler({
-//       connectionTimeout: 300000, // 5 minutes
-//       socketTimeout: 300000,    // 5 minutes
-//   }),
-
-// });
-
-// const PutObjectFunc = async (file) => {
-//   const params = {
-//     Bucket: BucketName,
-//     Key: file.originalname,
-//     Body: file.buffer,
-//   };
-
-//   try {
-//     const result = await s31.upload(params).promise();
-//     console.log("File uploaded successfully:", result);
-//   } catch (error) {
-//     console.error("File upload error:", error.message);
-//   }
-// };
-
-export {testS3Connection,PutObjectFunc}
+export {testS3Connection,PutObjectFunc,GetObjs}

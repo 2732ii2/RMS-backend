@@ -7,3 +7,24 @@
 - with :  await PutObjFunc
 - which actually taking that into a pending state
 -  
+
+
+
+: Which actually getting a lot of problem in get object signed url
+- but after some command's we are able to solve it 
+- `aws configure` try to add those which was mentioned in your env file 
+- and you good to go
+
+
+
+: mistakes that we did was stupidious ones
+
+: we used client in place where we have to use s3 first mistake 
+: second that we have to give content-type all ways so that it wouldn't just download
+: but just open in that chrome
+
+
+: some most important commands for bash or terminals : three commands save your life of here
+1 . aws s3 presign s3://recipebucket123/chiken_biryani.jpeg  --region us-east-1 --expires-in 3600
+2. aws configure
+3. aws configure list

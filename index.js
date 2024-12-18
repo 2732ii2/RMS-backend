@@ -8,7 +8,7 @@ import {ConnectDB,Usermodel} from "./DB.js";
 import random from 'js-crypto-random';
 import {QRPDFGen} from "./QRPDFGenerator.js";
 import multer from "multer";
-import { PutObjectFunc, testS3Connection } from "./S3controller.js";
+import { GetObjs, PutObjectFunc, testS3Connection } from "./S3controller.js";
 
 import events from "events";
 events.EventEmitter.defaultMaxListeners = 20; 
@@ -61,17 +61,19 @@ app.post("/userUpdation",async (req,res)=>{
 app.post("/add_recipe",upload.any(),async (req,res)=>{
     console.log("adding recipe",req.files[0]);
     var {usersess,type,Prices,Sizes,name,des}=req.body;
-    console.log(JSON.parse(usersess),type,Prices,Sizes,name,des);
+    console.log(JSON.parse(usersess),type,JSON.parse(Prices),JSON.parse(Sizes),(name),(des));
     try{
     const {token}=JSON.parse(usersess);
     if(jwt.verify(token,"secret")){
+        console.log("=> verified");
         PutObjectFunc(req.files[0]);
         const obj_={
-            type,
-            Prices,
-            Sizes,
-            "name":req.files[0]?.originalname,
-            des
+            "type":(type),
+            "Prices":JSON.parse(Prices),
+            "Sizes":JSON.parse(Sizes),
+            "name":(name),
+            "des":(des),
+            "key":req.files[0].originalname
         };
        const dish= await Usermodel.findOne({_id:JSON.parse(usersess)?._id});
        console.log("dish =>",dish?.Available_Dishes);
@@ -153,6 +155,29 @@ app.get("/userList",async (req,res)=>{
                 data
             })
         }
+        
+    }
+    catch(e){
+        res.json({
+            err:e?.message
+        })
+    }
+})
+app.get("/available_dishes",async (req,res)=>{
+    // const usersess=JSON.parse(req.headers["usersess"]);
+    // console.log(usersess);
+    try{
+        // if (jwt.verify(usersess?.token,"secret")){
+            // const data=(await Usermodel.findOne({_id:usersess?._id}))?.Available_Dishes;
+            const data=(await Usermodel.findOne({_id:"675c1c311c90b639647927fd"}))?.Available_Dishes;
+
+            console.log("data",data);
+            var data1=await GetObjs(data);
+            res.json({
+                msg:"user List Recieved ",
+                data1
+            })
+        // }
         
     }
     catch(e){
