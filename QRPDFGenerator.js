@@ -16,7 +16,10 @@ async function QRPDFGen(Resname,numberoftables) {
 
     // Step 1: Generate QR codes
     for (let i = 1; i <= numQRCodes; i++) {
-      const data = `${Resname}_${i}`;
+      // https://tc182wmt-3000.inc1.devtunnels.ms/
+      // const data = `http://localhost:3000/${Resname}/${i}`;
+      const data = `https://tc182wmt-3000.inc1.devtunnels.ms/${Resname}/${i}`;
+
       const qrCode = await QRCode.toDataURL(data);
       qrCodeImages.push(qrCode);
     }

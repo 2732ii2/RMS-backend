@@ -41,7 +41,8 @@ app.post("/userUpdation",async (req,res)=>{
                 resturantName:one
        }})
        console.log( "=>" ,resp);
-      const data= await QRPDFGen(one,two);
+      const data= await QRPDFGen(usersess?.roomId
+        ,two);
         res.json({
            msg:"some udpation is done it",
            data: data.toString("base64"), 
@@ -164,20 +165,32 @@ app.get("/userList",async (req,res)=>{
     }
 })
 app.get("/available_dishes",async (req,res)=>{
-    // const usersess=JSON.parse(req.headers["usersess"]);
-    // console.log(usersess);
+    const usersess=JSON.parse(req.headers["usersess"]);
+   console.log( (req.headers?.type),(req.headers?.room));
+    console.log("usersess",usersess,usersess?.token);
     try{
-        // if (jwt.verify(usersess?.token,"secret")){
-            // const data=(await Usermodel.findOne({_id:usersess?._id}))?.Available_Dishes;
-            const data=(await Usermodel.findOne({_id:"675c1c311c90b639647927fd"}))?.Available_Dishes;
-
-            console.log("data",data);
-            var data1=await GetObjs(data);
-            res.json({
-                msg:"user List Recieved ",
-                data1
-            })
-        // }
+        if ( req.headers?.type || jwt.verify(usersess?.token,"secret")){
+            console.log("getting verified");
+            var data=(await Usermodel.findOne({_id:usersess?._id}));
+            if(req.headers?.room){
+                data=(await Usermodel.findOne({roomId:req.headers?.room}));
+            }
+            console.log("data =>",data);
+            if(data?.Available_Dishes?.length){
+                    var data1=await GetObjs(data?.Available_Dishes);
+                    res.json({
+                        msg:"user List Recieved ",
+                        data1
+                    })
+            }
+            else{
+                res.json({
+                    msg:"No Available Dishes ",
+                    data:[]
+                })
+            }
+            
+        }
         
     }
     catch(e){
